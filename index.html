@@ -231,6 +231,8 @@
       if (name.includes('api') || description.includes('api')) return '🔌';
       if (name.includes('test') || description.includes('test')) return '🧪';
       if (name.includes('data') || description.includes('data')) return '📊';
+      if (name.includes('gato')) return '🎁';
+      if (name.includes('binario')) return '🔢';
       return '📁';
     }
 
@@ -250,7 +252,8 @@
         repos.forEach(repo => {
           if (!repo.fork) { // Mostrar solo repositorios originales
             const button = document.createElement('a');
-            button.href = repo.homepage || repo.html_url;
+            // Siempre usar la URL de GitHub Pages
+            button.href = `https://alfonsorv69.github.io/${repo.name}/`;
             button.className = 'project-button';
             button.target = '_blank';
             
