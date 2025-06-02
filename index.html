@@ -14,12 +14,12 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
       position: relative;
       padding: 20px;
       gap: 24px;
       color: #fff;
+      overflow-x: hidden;
     }
 
     .rainbow-text {
@@ -50,6 +50,29 @@
       flex-direction: column;
       gap: 15px;
       align-items: center;
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: 10px;
+      /* Estilo para la barra de desplazamiento */
+      scrollbar-width: thin;
+      scrollbar-color: #FFB300 rgba(255,255,255,0.1);
+      margin: 20px 0;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .project-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .project-container::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+
+    .project-container::-webkit-scrollbar-thumb {
+      background: #FFB300;
+      border-radius: 4px;
     }
 
     .project-button {
@@ -59,15 +82,38 @@
       border-radius: 12px;
       text-decoration: none;
       font-size: 1.2rem;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      width: 250px;
+      width: 100%;
+      max-width: 300px;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
     }
 
     .project-button:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+      background: #FFC107;
+    }
+
+    .project-button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .project-button .emoji {
+      font-size: 1.4rem;
+    }
+
+    .project-button .description {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      margin-top: 4px;
     }
 
     .footer-text {
@@ -77,45 +123,192 @@
       color: rgba(255, 255, 255, 0.7);
       font-size: 0.85rem;
       text-align: right;
+      z-index: 10;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
-    .emoji {
+    .background-emoji {
       position: fixed;
       font-size: 2rem;
       animation: fall linear infinite;
       pointer-events: none;
       z-index: 0;
+      opacity: 0.3;
     }
 
     @keyframes fall {
-      0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+      0% { 
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 0.3;
+      }
+      100% { 
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .loading {
+      color: #FFB300;
+      font-size: 1.2rem;
+      text-align: center;
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .loading::after {
+      content: '...';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: ''; }
+      40% { content: '.'; }
+      60% { content: '..'; }
+      80% { content: '...'; }
+    }
+
+    .error-message {
+      color: #FF5252;
+      text-align: center;
+      margin: 20px 0;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255,82,82,0.1);
+      border: 1px solid rgba(255,82,82,0.3);
+    }
+
+    @media (max-width: 480px) {
+      .rainbow-text {
+        font-size: 2rem;
+      }
+
+      .project-button {
+        font-size: 1rem;
+        padding: 12px 20px;
+      }
+
+      .project-button .emoji {
+        font-size: 1.2rem;
+      }
     }
   </style>
 </head>
 <body>
   <div class="rainbow-text">Mis Proyectos</div>
   
-  <div class="project-container">
-    <a href="https://alfonsorv69.github.io/gato/" class="project-button">
-      🎁 Regalo Laura
-    </a>
-    <a href="https://alfonsorv69.github.io/binario/" class="project-button">
-      🔢 Binario
-    </a>
+  <div class="project-container" id="projectContainer">
+    <div class="loading">Cargando repositorios</div>
   </div>
 
   <div class="footer-text">
     Created by: AlfonsoRV69<br>
-    Last update: 2025-06-02
+    Last update: <span id="lastUpdate">Loading...</span>
   </div>
 
   <script>
+    // Función para formatear la fecha como YYYY-MM-DD
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Función para seleccionar un emoji basado en el nombre y descripción del repositorio
+    function selectEmoji(repo) {
+      const name = repo.name.toLowerCase();
+      const description = (repo.description || '').toLowerCase();
+      
+      if (name.includes('game') || name.includes('juego') || description.includes('game') || description.includes('juego')) return '🎮';
+      if (name.includes('web') || description.includes('web')) return '🌐';
+      if (name.includes('app') || description.includes('app')) return '📱';
+      if (name.includes('bot') || description.includes('bot')) return '🤖';
+      if (name.includes('tool') || description.includes('tool')) return '🛠️';
+      if (name.includes('doc') || description.includes('documentation')) return '📚';
+      if (name.includes('api') || description.includes('api')) return '🔌';
+      if (name.includes('test') || description.includes('test')) return '🧪';
+      if (name.includes('data') || description.includes('data')) return '📊';
+      return '📁';
+    }
+
+    // Función para obtener y mostrar los repositorios
+    async function loadRepositories() {
+      const container = document.getElementById('projectContainer');
+      try {
+        const response = await fetch('https://api.github.com/users/AlfonsoRV69/repos');
+        if (!response.ok) throw new Error('Error al cargar los repositorios');
+        
+        const repos = await response.json();
+        container.innerHTML = ''; // Limpiar el contenedor
+        
+        // Ordenar repositorios por fecha de actualización
+        repos.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        
+        repos.forEach(repo => {
+          if (!repo.fork) { // Mostrar solo repositorios originales
+            const button = document.createElement('a');
+            button.href = repo.homepage || repo.html_url;
+            button.className = 'project-button';
+            button.target = '_blank';
+            
+            const emoji = selectEmoji(repo);
+            
+            button.innerHTML = `
+              <span class="emoji">${emoji}</span>
+              <span class="text">
+                ${repo.name}
+                ${repo.description ? `<div class="description">${repo.description}</div>` : ''}
+              </span>
+            `;
+            
+            container.appendChild(button);
+          }
+        });
+        
+        if (container.children.length === 0) {
+          container.innerHTML = '<div class="loading">No hay proyectos disponibles</div>';
+        }
+        
+      } catch (error) {
+        console.error('Error loading repositories:', error);
+        container.innerHTML = `
+          <div class="error-message">
+            Error al cargar los repositorios. Por favor, intenta de nuevo más tarde.
+          </div>
+        `;
+      }
+    }
+
+    // Obtener la última fecha de actualización desde GitHub
+    async function getLastUpdate() {
+      const lastUpdateElement = document.getElementById('lastUpdate');
+      try {
+        const response = await fetch('https://api.github.com/repos/AlfonsoRV69/Repositorios/commits?path=index.html');
+        const commits = await response.json();
+        if (commits.length > 0) {
+          const lastCommitDate = commits[0].commit.committer.date;
+          lastUpdateElement.textContent = formatDate(lastCommitDate);
+        }
+      } catch (error) {
+        console.error('Error fetching last update:', error);
+        lastUpdateElement.textContent = formatDate(new Date());
+      }
+    }
+
+    // Cargar repositorios y fecha de actualización cuando se carga la página
+    document.addEventListener('DOMContentLoaded', () => {
+      loadRepositories();
+      getLastUpdate();
+    });
+
     // Emojis animados de fondo
     const emojis = ['✨', '💻', '🎮', '🎯', '🎪'];
     function createEmoji() {
       const emoji = document.createElement('div');
-      emoji.classList.add('emoji');
+      emoji.classList.add('background-emoji');
       emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
       emoji.style.left = Math.random() * window.innerWidth + 'px';
       emoji.style.animationDuration = Math.random() * 3 + 4 + 's';
@@ -123,6 +316,10 @@
       setTimeout(() => emoji.remove(), 6000);
     }
 
-    setInterval(createEmoji, 300);
+    // Iniciar animación de emojis con un pequeño retraso para mejorar el rendimiento inicial
+    setTimeout(() => {
+      setInterval(createEmoji, 300);
+    }, 1000);
   </script>
 </body>
+</html>
