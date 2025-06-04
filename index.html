@@ -324,5 +324,12 @@
       setInterval(createEmoji, 300);
     }, 1000);
   </script>
+  <audio id="bg-music" src="https://cdn.pixabay.com/audio/2022/03/15/audio_115b9e5b6c.mp3" loop autoplay></audio>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const audio = document.getElementById('bg-music');
+    audio.volume = 0.5; // 50% de volumen
+  });
+</script>
 </body>
 </html>
